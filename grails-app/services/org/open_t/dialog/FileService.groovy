@@ -3,6 +3,7 @@ package org.open_t.dialog
 import java.text.SimpleDateFormat
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.FileFileFilter
 
 class FileService {
 
@@ -98,9 +99,9 @@ class FileService {
 
 	def filelist(dc,params,fileCategory="images",linkType="external",actions=null) {
 		def format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",new Locale('nl'))
-        log.error "PARAMS: ${params}"
+        	log.debug "PARAMS: ${params}"
 		def diUrl=fileUrl(dc,params.id,fileCategory)
-
+		log.info "Documents for documentId ${params.id} are in: ${diUrl}"
 		def aaData=[:]
 		//def baseUrl=request.contextPath
 		if(params.id&& params.id!="null") {
@@ -110,7 +111,7 @@ class FileService {
                 if (linkType=="external") {
                     downloadLink="${diUrl}/${file.name}"
                 } else {
-                    log.error "params: ${params}"
+                    log.debug "params: ${params}"
                     downloadLink=g.createLink(action:"streamfile",id:params.id,params:[filename:file.name])
                 }
                 
@@ -143,9 +144,9 @@ class FileService {
 
 	def filelistnolink(dc,params,fileCategory="images",linkType="external",actions=null) {
 		def format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",new Locale('nl'))
-	        log.error "PARAMS: ${params}"
+	        log.debug "PARAMS: ${params}"
 		def diUrl=fileUrl(dc,params.id,fileCategory)
-		println "Documents for documentId ${params.id} are in: ${diUrl}"
+		log.info "Documents for documentId ${params.id} are in: ${diUrl}"
 
 		def aaData=[:]
 		//def baseUrl=request.contextPath
@@ -156,7 +157,7 @@ class FileService {
 		                if (linkType=="external") {
 		                    downloadLink="${diUrl}/${file.name}"
 		                } else {
-		                    log.error "params: ${params}"
+		                    log.debug "params: ${params}"
 		                    downloadLink=g.createLink(action:"streamfile",id:params.id,params:[filename:file.name])
 		                }
 			
@@ -301,5 +302,16 @@ class FileService {
 		}
 		response.outputStream.flush()
 	}
-    
+
+	/**
+	* Copy files from one domain object to another
+	*/
+	def copyFiles(dc=null, fileCategory="images", fromId, toId) {
+	    if( (fromId != null) && (toId != null) ) {
+	        File fromDir = new File(filePath(dc,fromId,fileCategory))
+                File toDir = new File(filePath(dc,toId,fileCategory))
+                FileUtils.copyDirectory(fromDir,toDir,FileFileFilter.FILE)
+		log.info "Copied files from directory ${fromDir} to directory ${toDir}"
+	    }
+	}    
 }
