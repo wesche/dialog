@@ -141,6 +141,55 @@ class FileService {
 		def json = [sEcho:params.sEcho,iTotalRecords:aaData.size(),iTotalDisplayRecords:aaData.size(),aaData:aaData]
 	}
 
+	def filelistnolink(dc,params,fileCategory="images",linkType="external",actions=null) {
+		def format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",new Locale('nl'))
+	        log.error "PARAMS: ${params}"
+		def diUrl=fileUrl(dc,params.id,fileCategory)
+		println "Documents for documentId ${params.id} are in: ${diUrl}"
+
+		def aaData=[:]
+		//def baseUrl=request.contextPath
+		if(params.id&& params.id!="null") {
+			File dir = new File(filePath(dc,params.id,fileCategory))
+			aaData=dir.listFiles().collect { file ->
+		                def downloadLink
+		                if (linkType=="external") {
+		                    downloadLink="${diUrl}/${file.name}"
+		                } else {
+		                    log.error "params: ${params}"
+		                    downloadLink=g.createLink(action:"streamfile",id:params.id,params:[filename:file.name])
+		                }
+			
+	                if(!actions) {
+				actions= { aParams,aFile ->
+		                        def actionsString="""<div class="btn-group">"""
+		                        def actionsParameter=aParams.actions?:"none"
+		                        def actionsList=actionsParameter.split(',')
+		                        // TODO add other actions ('show','edit')
+		                        if (actionsList.contains("view")) {
+		                            actionsString +="""<span class="btn btn-small" onclick="javascript: \$('iframe').attr('src', '${diUrl}/${aFile.name}');">Bekijken</span>""" 
+		                        }
+		                        if (actionsList.contains("delete")) {
+		                            actionsString +="""<span class="btn btn-small" onclick="dialog.deleteFile(${aParams.id},'${aParams.controller}','${aFile.name}',null)">&times;</span>""" 
+		                        }
+		                        actionsString+="</div>"
+					return actionsString
+				}
+			}
+
+				[0:"""${file.name}""",
+				 1:file.length(),
+				 2:format.format(file.lastModified()),
+		                 3: actions(params,file)]
+			}.sort { file -> file[new Integer(params.iSortCol_0)] }
+
+			if (params.sSortDir_0=="desc") {
+				aaData=aaData.reverse()
+			}
+		}
+		def json = [sEcho:params.sEcho,iTotalRecords:aaData.size(),iTotalDisplayRecords:aaData.size(),aaData:aaData]
+	}
+
 	def filemap(dc,params,fileCategory="images") {
 		def diUrl=fileUrl(dc,params.id,fileCategory)
 		def diPath=filePath(dc,params.id,fileCategory)
