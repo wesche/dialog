@@ -168,7 +168,7 @@ class FileService {
 		                        def actionsList=actionsParameter.split(',')
 		                        // TODO add other actions ('show','edit')
 		                        if (actionsList.contains("view")) {
-		                            actionsString +="""<span class="btn btn-small" onclick="javascript: \$('iframe').attr('src', '${diUrl}/${aFile.name}');">Bekijken</span>""" 
+		                            actionsString +="""<span class="btn btn-small" onclick="javascript: viewDocument('${diUrl}/${aFile.name}')">Bekijken</a>"""
 		                        }
 		                        if (actionsList.contains("delete")) {
 		                            actionsString +="""<span class="btn btn-small" onclick="dialog.deleteFile(${aParams.id},'${aParams.controller}','${aFile.name}',null)">&times;</span>""" 

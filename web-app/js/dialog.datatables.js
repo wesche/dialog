@@ -20,6 +20,24 @@
 */
 dialog.datatables = {};
 
+dialog.datatables.initializedTableEvent = function initializedTableEvent(event, tableId) {
+	
+	//If there are no documents linked to this task, we don't show the document viewer...
+	if($("table#"+tableId).dataTable().fnSettings()._iRecordsTotal == 0) {
+		$('#tabhead-1').trigger('click');
+		$('#tab-0').hide();
+		$('#tabhead-0').hide();
+	} else {
+		//Maximize modal
+		$('.xml-form.modal').attr('style', 'display: block; width: 100%; left: 0; margin-left:0');
+		
+		//Show doc viewer
+		$('#docform').css('width', '60%');
+		$('#docviewer').css('width', '40%');
+		$('#docviewer').show();
+	}
+}
+
 
 dialog.datatables.open =function open (e,params) {
 	$(e.target).find('.detailTable').each( function(index) {	
@@ -61,6 +79,7 @@ dialog.datatables.open =function open (e,params) {
 		     	 "sUrl": dialog.dataTablesLanguageUrl, 
 		    	},
 	    	"fnInitComplete": function() {
+	    		$("#"+tableId).trigger("dialog-table-loaded", [tableId]);
 	    		if ( $(this).hasClass("rowreordering")) {
        				dialog.dataTableHashList[tableId].rowReordering(       				
        				{
@@ -82,6 +101,7 @@ dialog.datatables.open =function open (e,params) {
 		});
 		// refresh dialog on event
 		$("#"+tableId).bind("dialog-refresh",dialog.datatables.refreshDatatableEvent);
+		$("#"+tableId).bind("dialog-table-loaded",dialog.datatables.initializedTableEvent);
 		$("#"+tableId).addClass("dialog-events");       			
 	});
 	return false;
